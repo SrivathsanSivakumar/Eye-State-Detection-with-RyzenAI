@@ -1,4 +1,4 @@
-from prepare_model_and_data import quantize_loader as get_quantize_loader
+from prepare_model_and_data import prepare_dataset
 
 # vitis ai imports
 import onnx, vai_q_onnx
@@ -43,7 +43,10 @@ def quantize(quantize_loader):
     )
 
     print(f"Quantized Model Saved at {output_model_path}")
-    
+
 def main():
-    quantize_loader = get_quantize_loader()
+    quantize_loader = prepare_dataset("data/OACE", quantization=True)
     quantize(quantize_loader)
+
+if __name__ == "__main__":
+    main()
