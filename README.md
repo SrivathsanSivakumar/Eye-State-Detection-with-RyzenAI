@@ -1,4 +1,4 @@
-# Eye State Classification using RyzenAI with MobileNetV2, ResNet50 and A Custom CNN
+# Eye State Classification using RyzenAI with MobileNetV2, MobileNetV3 and ResNet50
 
 ## Introduction
 
