@@ -2,11 +2,9 @@
 
 # general imports
 import tarfile
-import os, argparse, urllib
-import cv2 as cv
-import numpy as np
-from pathlib import Path
+import os, argparse
 import gdown
+import utils
 
 # pytorch imports
 import torch
@@ -17,18 +15,11 @@ from torchvision.datasets import ImageFolder
 
 def get_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-model", type=str, default='mobilenetv2')
+    parser.add_argument("-train", action='store_true')
     parser.add_argument("--num_epochs", type=int, default=1)
-    parser.add_argument("--train", action='store_true')
     args = parser.parse_args()
     return args
-
-def load_mobilenetv2():
-    model = models.mobilenet_v2()
-    num_classes = 2  # Assuming 2 classes for the eye state detection
-    in_features = model.classifier[-1].in_features
-    model.classifier[-1] = torch.nn.Linear(in_features, num_classes)
-    model.load_state_dict(torch.load("model/mobilenetv2_eye_state_detection.pt"))
-    return model
 
 ### pass quantization as True from quantize_model.py to get calibration data. 
 ### Changing its value will affect the creating and usage of other dataloaders
@@ -53,20 +44,17 @@ def prepare_dataset(dataset_path, quantization: bool=False):
     full_dataset = ImageFolder(dataset_path)
     classes = full_dataset.classes
 
-    train_size = int(0.60 * len(full_dataset))
+    train_size = int(0.65 * len(full_dataset))
     val_size = int(0.15 * len(full_dataset))
-    test_size = int(0.10 * len(full_dataset))
-    ipu_test_size = int(0.10 * len(full_dataset))
+    test_size = int(0.15 * len(full_dataset))
     quantize_size = int(0.05 * len(full_dataset))
 
-    train_dataset, val_dataset, test_dataset, ipu_test_dataset, quantize_dataset = random_split(
-        full_dataset, [train_size, val_size, test_size, ipu_test_size, quantize_size])
+    train_dataset, val_dataset, test_dataset, quantize_dataset = random_split(
+        full_dataset, [train_size, val_size, test_size, quantize_size])
     
-    ipu_test_dataset.dataset.transform = basic_transform
     quantize_dataset.dataset.transform = basic_transform
     test_dataset.dataset.transform = basic_transform
 
-    ipu_test_loader = DataLoader(ipu_test_dataset, batch_size=1, shuffle=False, num_workers=4)
     quantize_loader = DataLoader(quantize_dataset, batch_size=1, shuffle=False, num_workers=4)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4)
 
@@ -80,26 +68,13 @@ def prepare_dataset(dataset_path, quantization: bool=False):
         train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4)
         val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4)
 
-        return classes, train_loader, val_loader, test_loader, ipu_test_loader, quantize_loader
+        return classes, train_loader, val_loader, test_loader, quantize_loader
 
-    return classes, test_loader, ipu_test_loader, quantize_loader
+    return classes, test_loader, quantize_loader
 
-def train_model(num_epochs, train_loader, val_loader, criterion):
+def train_model(model_name, num_epochs, train_loader, val_loader, criterion):
 
-    print("Initialized Fresh MobileNetV2 Model")
-
-    model = models.mobilenet_v2(weights="IMAGENET1K_V2")
-
-    # modify final layer to match the number of classes
-    in_features = model.classifier[1].in_features
-    model.classifier[1] = nn.Linear(in_features, 2) # open eyes and close eyes - 2 classes
-
-    # freeze base layers of model
-    for name, param in model.named_parameters():
-        if "classifier" in name:
-            param.requires_grad=True
-        else:
-            param.requires_grad=False
+    model = utils.get_fresh_model(model_name)
 
     optimizer = optim.SGD(model.parameters(), lr=0.0005, momentum=0.9, weight_decay=1e-4) # stochastic gradient descent
     scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=0.3, gamma=0.1)
@@ -147,11 +122,11 @@ def train_model(num_epochs, train_loader, val_loader, criterion):
 
         print()
 
-    print('Training complete')
+    print('Training complete\n')
     model.to("cpu")
-    torch.save(model.state_dict(), "model/mobilenetv2_eye_state_detection.pt")
+    torch.save(model.state_dict(), f"model/{model_name}/{model_name}_eye_state_detection.pt")
 
-def test_model(model, test_loader, criterion, classes, num_imgs):
+def test_pt_model(model, test_loader, criterion, classes, num_imgs):
     print("****************************")
     print("Testing Fine-Tuned Model...")
 
@@ -194,7 +169,7 @@ def export_to_onnx(model, models_dir):
     input_names = ['input']
     output_names = ['output']
     dynamic_axes = {'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}}
-    tmp_model_path = str(models_dir+"/mobilenetv2_eye_state_detection.onnx")
+    tmp_model_path = str(models_dir+f"_eye_state_detection.onnx")
     torch.onnx.export(
         model,
         random_inputs,
@@ -212,29 +187,39 @@ def main():
     args = get_args()
 
     dataset_path = "data/OACE"
+    data_download_path = "data/OACE.tar.gz"
 
     # get dataset from google drive
-    # data_download_path = "data/OACE.tar.gz"
-    # download_url = "https://drive.google.com/uc?export=download&id=1FaG8S0kLckhyTzYEUIl0E0Hzpry6G_xe"
-    # gdown.download(download_url, data_download_path, quiet=False)
-    # with tarfile.open(data_download_path, "r:gz") as tar:
-    #     tar.extractall(path="data")
-    
+    if os.path.isdir(dataset_path):
+        print("Dataset already exists")
+    else:
+        if os.path.exists(data_download_path):
+            with tarfile.open(data_download_path, "r:gz") as tar:
+                tar.extractall(path="data")
+        else:
+            download_url = "https://drive.google.com/uc?export=download&id=1FaG8S0kLckhyTzYEUIl0E0Hzpry6G_xe"
+            gdown.download(download_url, data_download_path, quiet=False)
+            with tarfile.open(data_download_path, "r:gz") as tar:
+                    tar.extractall(path="data")
+                    
+    criterion = nn.CrossEntropyLoss() # to learn both classes and not just one. 
+    if args.train:
+        classes, train_loader, val_loader, test_loader, _ = prepare_dataset(dataset_path)
+        train_model(args.model, args.num_epochs, train_loader, val_loader, criterion)
+    else:
+        classes, test_loader, _ = prepare_dataset(dataset_path)
+
     # load finetuned model
-    model = load_mobilenetv2()  
+    if args.model == 'mobilenetv3':
+        model = utils.load_mobilenetv3()  
+    else:
+        model = utils.load_mobilenetv2()
+
     model = model.to("cpu")
 
-    criterion = nn.CrossEntropyLoss() # to learn both classes and not just one. 
-
-    if args.train:
-        classes, train_loader, val_loader, test_loader, ipu_test_loader, quantize_loader = prepare_dataset(dataset_path)
-        train_model(args.num_epochs, train_loader, val_loader, criterion)
-    else:
-        classes, test_loader, ipu_test_loader, quantize_loader = prepare_dataset(dataset_path)
-
     # test model and export to onnx
-    test_model(model, test_loader, criterion, classes, 10)
-    export_to_onnx(model, "model")
+    test_pt_model(model, test_loader, criterion, classes, 10)
+    export_to_onnx(model, f"model/{args.model}/{args.model}")
 
 if __name__ == "__main__":
     main()
