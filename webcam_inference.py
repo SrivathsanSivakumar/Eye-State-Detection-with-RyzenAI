@@ -78,7 +78,7 @@ def start_webcam(session):
 
 def main():
     args = get_args()
-    session = utils.load_quantized_model(f"model/{args.model}/{args.model}_eye_state_detection.qdq.U8S8.onnx", model_name=args.model)
+    session = utils.load_quantized_model(f"model/{args.model}_eye_state_detection.qdq.U8S8.onnx")
     start_webcam(session)
 
 if __name__ == "__main__":

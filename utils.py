@@ -2,23 +2,26 @@
 
 import cv2
 from pathlib import Path
-from torchvision import transforms
+
+import torch
+import torch.nn as nn
+from torchvision import transforms, models
 
 import onnx, onnxruntime
 
+### ***************************************************************************
+###                         Inference Helper Functions
+### ***************************************************************************
+
 # onnx model startup with vitisai
-def load_quantized_model(model_path, model_name='mobilenetv2'):
+def load_quantized_model(model_path):
 
     onnx_model_path = model_path
     model = onnx.load(onnx_model_path)  
-    cache_key = 'mn2cachekey'
 
     '''
     TODO: Add argument to run inference on cpu and ipu
     '''
-
-    if model_name=='mobilenetv3':
-        cache_key = 'mn3cachekey'
 
     providers = ['VitisAIExecutionProvider'] # run inference on ipu
     cache_dir = Path().resolve()
@@ -26,7 +29,7 @@ def load_quantized_model(model_path, model_name='mobilenetv2'):
     provider_options = [{
         'config_file': 'vaip_config.json',
         'cacheDir': str(cache_dir),
-        'cacheKey': cache_key
+        'cacheKey': 'modelcachekey'
     }]
 
     session = onnxruntime.InferenceSession(model.SerializeToString(), providers=providers,
@@ -67,3 +70,62 @@ def draw_bbox_with_label(frame, bbox, label):
     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
     text = f"{label}"
     cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
+
+### ***************************************************************************
+###                       Train and Test Helper Functions
+### ***************************************************************************
+
+
+def load_mobilenetv2():
+    model = models.mobilenet_v2()
+    num_classes = 2  # Assuming 2 classes for the eye state detection
+    in_features = model.classifier[-1].in_features
+    model.classifier[-1] = torch.nn.Linear(in_features, num_classes)
+    model.load_state_dict(torch.load("model/mobilenetv2_eye_state_detection.pt"))
+    return model
+
+def load_mobilenetv3():
+    model = models.mobilenet_v3_large()
+    num_classes = 2
+    in_features = model.classifier[-1].in_features
+    model.classifier[-1] = torch.nn.Linear(in_features, num_classes)
+    model.load_state_dict(torch.load("model/mobilenetv3/mobilenetv3_eye_state_detection.pt"))
+    return model
+
+def get_fresh_model(model_name):
+    if model_name == "mobilenetv2":
+        print("Initialized Fresh MobileNetV2 Model")
+        model = models.mobilenet_v2(weights="IMAGENET1K_V2")
+
+        # modify final layer to match the number of classes
+        in_features = model.classifier[1].in_features
+        model.classifier[1] = nn.Linear(in_features, 2) # open eyes and close eyes - 2 classes
+
+        # freeze base layers of model
+        for name, param in model.named_parameters():
+            if "classifier" in name:
+                param.requires_grad=True
+            else:
+                param.requires_grad=False
+        
+        return model
+    
+    elif model_name == "mobilenetv3":
+        print("Initialized Fresh MobileNetV3 Model")
+        model = models.mobilenet_v3_large(weights="IMAGENET1K_V2")
+
+        # modify final layer to match the number of classes
+        in_features = model.classifier[3].in_features
+        model.classifier[3] = nn.Linear(in_features, 2) # open eyes and close eyes - 2 classes
+
+        # freeze base layers of model
+        for name, param in model.named_parameters():
+            if "classifier" in name:
+                param.requires_grad=True
+            else:
+                param.requires_grad=False
+
+        return model
+
+    else: pass # TODO: add support for resnet50
