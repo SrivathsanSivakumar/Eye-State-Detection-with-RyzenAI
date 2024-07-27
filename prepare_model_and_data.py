@@ -24,7 +24,7 @@ def get_args():
 ### pass quantization as True from quantize_model.py to get calibration data. 
 ### Changing its value will affect the creating and usage of other dataloaders
 ### meant for train, val and test
-def prepare_dataset(dataset_path, quantization: bool=False):
+def prepare_dataset(dataset_path, quantization: bool=False, ipu_test: bool=False):
 
     # preprocessing
     train_transform = transforms.Compose([
@@ -44,22 +44,27 @@ def prepare_dataset(dataset_path, quantization: bool=False):
     full_dataset = ImageFolder(dataset_path)
     classes = full_dataset.classes
 
-    train_size = int(0.65 * len(full_dataset))
+    train_size = int(0.60 * len(full_dataset))
     val_size = int(0.15 * len(full_dataset))
-    test_size = int(0.15 * len(full_dataset))
+    test_size = int(0.10 * len(full_dataset))
+    ipu_test_size = int(0.10 * len(full_dataset))
     quantize_size = int(0.05 * len(full_dataset))
 
-    train_dataset, val_dataset, test_dataset, quantize_dataset = random_split(
-        full_dataset, [train_size, val_size, test_size, quantize_size])
+    train_dataset, val_dataset, test_dataset, ipu_dataset, quantize_dataset = random_split(
+        full_dataset, [train_size, val_size, test_size, ipu_test_size, quantize_size])
     
-    quantize_dataset.dataset.transform = basic_transform
     test_dataset.dataset.transform = basic_transform
-
-    quantize_loader = DataLoader(quantize_dataset, batch_size=1, shuffle=False, num_workers=4)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4)
-
+    
     if (quantization):
+        quantize_dataset.dataset.transform = basic_transform
+        quantize_loader = DataLoader(quantize_dataset, batch_size=1, shuffle=True, num_workers=4)
         return quantize_loader
+    
+    if (ipu_test):
+        ipu_dataset.dataset.transform = basic_transform
+        ipu_test_loader = DataLoader(quantize_dataset, batch_size=1, shuffle=False, num_workers=4)   
+        return ipu_test_loader
 
     if get_args().train:
         train_dataset.dataset.transform = train_transform
@@ -68,15 +73,15 @@ def prepare_dataset(dataset_path, quantization: bool=False):
         train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4)
         val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4)
 
-        return classes, train_loader, val_loader, test_loader, quantize_loader
+        return classes, train_loader, val_loader, test_loader
 
-    return classes, test_loader, quantize_loader
+    return classes, test_loader
 
 def train_model(model_name, num_epochs, train_loader, val_loader, criterion):
 
     model = utils.get_fresh_model(model_name)
 
-    optimizer = optim.SGD(model.parameters(), lr=0.0005, momentum=0.9, weight_decay=1e-4) # stochastic gradient descent
+    optimizer = optim.SGD(model.parameters(), lr=0.0008, momentum=0.9, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=0.3, gamma=0.1)
 
     for epoch in range(num_epochs):
@@ -124,7 +129,7 @@ def train_model(model_name, num_epochs, train_loader, val_loader, criterion):
 
     print('Training complete\n')
     model.to("cpu")
-    torch.save(model.state_dict(), f"model/{model_name}/{model_name}_eye_state_detection.pt")
+    torch.save(model.state_dict(), f"model/{model_name}_eye_state_detection.pt")
 
 def test_pt_model(model, test_loader, criterion, classes, num_imgs):
     print("****************************")
@@ -204,10 +209,10 @@ def main():
                     
     criterion = nn.CrossEntropyLoss() # to learn both classes and not just one. 
     if args.train:
-        classes, train_loader, val_loader, test_loader, _ = prepare_dataset(dataset_path)
+        classes, train_loader, val_loader, test_loader = prepare_dataset(dataset_path)
         train_model(args.model, args.num_epochs, train_loader, val_loader, criterion)
     else:
-        classes, test_loader, _ = prepare_dataset(dataset_path)
+        classes, test_loader = prepare_dataset(dataset_path)
 
     # load finetuned model
     if args.model == 'mobilenetv3':
@@ -219,7 +224,7 @@ def main():
 
     # test model and export to onnx
     test_pt_model(model, test_loader, criterion, classes, 10)
-    export_to_onnx(model, f"model/{args.model}/{args.model}")
+    export_to_onnx(model, f"model/{args.model}")
 
 if __name__ == "__main__":
     main()
