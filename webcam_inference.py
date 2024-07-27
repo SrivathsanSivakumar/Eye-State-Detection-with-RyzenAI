@@ -5,6 +5,7 @@ import cv2, dlib
 import numpy as np
 from pathlib import Path
 import utils 
+import argparse
 
 # pytorch imports
 import torch
@@ -14,6 +15,12 @@ from facenet_pytorch import MTCNN
 import onnx, onnxruntime
 
 classes = ["Closed", "Open"]
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-model", type=str, default='mobilenetv2')
+    args = parser.parse_args()
+    return args
 
 def start_webcam(session):
 
@@ -70,9 +77,8 @@ def start_webcam(session):
             break
 
 def main():
-    model_path = "model/mobilenetv2/mobilenetv2_eye_state_detection.qdq.U8S8.onnx"
-    session = utils.load_quantized_model(model_path)
-
+    args = get_args()
+    session = utils.load_quantized_model(f"model/{args.model}/{args.model}_eye_state_detection.qdq.U8S8.onnx", model_name=args.model)
     start_webcam(session)
 
 if __name__ == "__main__":

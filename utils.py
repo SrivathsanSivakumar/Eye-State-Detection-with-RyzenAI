@@ -7,14 +7,18 @@ from torchvision import transforms
 import onnx, onnxruntime
 
 # onnx model startup with vitisai
-def load_quantized_model(model_path):
+def load_quantized_model(model_path, model_name='mobilenetv2'):
 
     onnx_model_path = model_path
     model = onnx.load(onnx_model_path)  
+    cache_key = 'mn2cachekey'
 
     '''
     TODO: Add argument to run inference on cpu and ipu
     '''
+
+    if model_name=='mobilenetv3':
+        cache_key = 'mn3cachekey'
 
     providers = ['VitisAIExecutionProvider'] # run inference on ipu
     cache_dir = Path().resolve()
@@ -22,7 +26,7 @@ def load_quantized_model(model_path):
     provider_options = [{
         'config_file': 'vaip_config.json',
         'cacheDir': str(cache_dir),
-        'cacheKey': 'modelcachekey'
+        'cacheKey': cache_key
     }]
 
     session = onnxruntime.InferenceSession(model.SerializeToString(), providers=providers,
