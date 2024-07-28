@@ -1,5 +1,9 @@
 # Eye State Classification using RyzenAI with MobileNetV2, MobileNetV3 and ResNet50
 
+![cover image](cover_image.png)
+
+Results from MobileNetV2 post quantized model, run on RyzenAI.
+
 ## Introduction
 
 A MobileNetV2 model is adapted to the classification task of eye state classification i.e. open or closed eyes. Each eye is individually recognized and labelled. The model is converted and quantized to be compatible with AMD's Ryzen AI chip. 
@@ -11,7 +15,7 @@ A MobileNetV2 model is adapted to the classification task of eye state classific
 
 ## Dataset
 
-The [OACE dataset](https://www.kaggle.com/datasets/muhammadhananasghar/oace-open-and-close-eyes-dataset) is used. This dataset has extra images of a **single** subject added to it (which uses a uuid naming, different from the other images) which contain distortions. Those images are removed from the dataset which brought it down half the size. Next, 40,000 random images (10k from open and 10k from close) were selected and used for the project. You can download the modified and trimmed dataset [here](https://drive.usercontent.google.com/download?id=1Qzuf3M7GOi5_JCmvHopTIe_G4IO7-hjP&export=download&authuser=0)
+The [OACE dataset](https://www.kaggle.com/datasets/muhammadhananasghar/oace-open-and-close-eyes-dataset) is used. This dataset has extra images of a **single** subject added to it (which uses a uuid naming, different from the other images) which contain distortions. Those images are removed from the dataset which brought it down half the size. Next, 10,000 random images (5k from open and 5k from close) were selected and used for the project. You can download the modified and trimmed dataset [here](https://drive.google.com/uc?export=download&id=1Qzuf3M7GOi5_JCmvHopTIe_G4IO7-hjP)
 
 ## Steps to Test The Project
 
@@ -51,7 +55,9 @@ For a complete run involving initializing the model, train, test, quantize and d
 
 | Model       | PyTorch Acuracy        | QDQ Onnx Accuracy        |
 |------------------|------------------|------------------|
-| MobileNetV2    | 96%    | 98%    |
+| MobileNetV2    | 96%    | 99%    |
 | MobileNetV3   | 98%   | 55%    |
+
+*Note: The increase in accuracy of the Post-Quantized MobileNetV2 model might be due to the calibration data being small compared to the dataset*
 
 *Note: The reason for steep drop in accuracy for MobileNetV3, post quantization is because the opset number does not support HardSigmoid that the model uses. A potential fix would be to use custom ops that is ONNX friendly*
