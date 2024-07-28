@@ -2,7 +2,7 @@
 
 # General imports
 from pathlib import Path
-import os
+import argparse
 import cv2
 import dlib
 from PIL import Image
@@ -21,6 +21,11 @@ import onnxruntime
 
 classes = ["Closed", "Open"]
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-model", type=str, default='mobilenetv2')
+    args = parser.parse_args()
+    return args
 
 def image_inference(image_folder, session):
 
@@ -76,7 +81,8 @@ def image_inference(image_folder, session):
     cv2.destroyAllWindows()
 
 def main():
-    session = utils.load_quantized_model("model/mobilenetv2/mobilenetv2_eye_state_detection.qdq.U8S8.onnx")
+    args = get_args()
+    session = utils.load_quantized_model(f"model/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
     image_folder = "images"
     image_inference(image_folder, session)
 
