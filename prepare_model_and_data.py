@@ -22,6 +22,7 @@ def get_args():
     return args
 
 ### pass quantization as True from quantize_model.py to get calibration data. 
+### pass ipu_test as true to get data to test quantized model
 ### Changing its value will affect the creating and usage of other dataloaders
 ### meant for train, val and test
 def prepare_dataset(dataset_path, quantization: bool=False, ipu_test: bool=False):
@@ -49,6 +50,12 @@ def prepare_dataset(dataset_path, quantization: bool=False, ipu_test: bool=False
     test_size = int(0.10 * len(full_dataset))
     ipu_test_size = int(0.10 * len(full_dataset))
     quantize_size = int(0.05 * len(full_dataset))
+
+    calculated_sum = train_size + val_size + test_size + ipu_test_size + quantize_size
+
+    # Add leftover data to training set
+    if calculated_sum != len(full_dataset):
+        train_size += (len(full_dataset) - calculated_sum)
 
     train_dataset, val_dataset, test_dataset, ipu_dataset, quantize_dataset = random_split(
         full_dataset, [train_size, val_size, test_size, ipu_test_size, quantize_size])
@@ -81,7 +88,7 @@ def train_model(model_name, num_epochs, train_loader, val_loader, criterion):
 
     model = utils.get_fresh_model(model_name)
 
-    optimizer = optim.SGD(model.parameters(), lr=0.0008, momentum=0.9, weight_decay=1e-4)
+    optimizer = optim.SGD(model.parameters(), lr=0.0005, momentum=0.9, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=0.3, gamma=0.1)
 
     for epoch in range(num_epochs):
@@ -174,7 +181,7 @@ def export_to_onnx(model, models_dir):
     input_names = ['input']
     output_names = ['output']
     dynamic_axes = {'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}}
-    tmp_model_path = str(models_dir+f"_eye_state_detection.onnx")
+    tmp_model_path = str(models_dir+"_eye_state_detection.onnx")
     torch.onnx.export(
         model,
         random_inputs,
@@ -202,7 +209,7 @@ def main():
             with tarfile.open(data_download_path, "r:gz") as tar:
                 tar.extractall(path="data")
         else:
-            download_url = "https://drive.google.com/uc?export=download&id=1FaG8S0kLckhyTzYEUIl0E0Hzpry6G_xe"
+            download_url = "https://drive.google.com/uc?export=download&id=1Qzuf3M7GOi5_JCmvHopTIe_G4IO7-hjP"
             gdown.download(download_url, data_download_path, quiet=False)
             with tarfile.open(data_download_path, "r:gz") as tar:
                     tar.extractall(path="data")
