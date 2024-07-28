@@ -14,14 +14,18 @@ import onnx, onnxruntime
 ### ***************************************************************************
 
 # onnx model startup with vitisai
-def load_quantized_model(model_path):
+def load_quantized_model(model_path, model_name):
 
     onnx_model_path = model_path
     model = onnx.load(onnx_model_path)  
-
+    cache_key = 'modelcachekey'
     '''
     TODO: Add argument to run inference on cpu and ipu
     '''
+
+    if model_name == "mobilenetv3":
+        cache_key = 'modelcachekey_mn3'
+
 
     providers = ['VitisAIExecutionProvider'] # run inference on ipu
     cache_dir = Path().resolve()
@@ -29,7 +33,7 @@ def load_quantized_model(model_path):
     provider_options = [{
         'config_file': 'vaip_config.json',
         'cacheDir': str(cache_dir),
-        'cacheKey': 'modelcachekey'
+        'cacheKey': cache_key
     }]
 
     session = onnxruntime.InferenceSession(model.SerializeToString(), providers=providers,
@@ -50,13 +54,13 @@ def process_image(image):
 
 def extract_eye_regions(rgb_frame, face_landmarks):
 
-    left_eye_length = 1.6 * (face_landmarks[39, 0] - face_landmarks[36, 0])
-    left_eye_width = 3.5 * (face_landmarks[41, 1] - face_landmarks[37, 1])
+    left_eye_length = 2 * (face_landmarks[39, 0] - face_landmarks[36, 0])
+    left_eye_width = 4 * (face_landmarks[41, 1] - face_landmarks[37, 1])
     left_eye_startx = face_landmarks[36, 0] - 0.3 * left_eye_length
     left_eye_starty = face_landmarks[37, 1] - 0.3 * left_eye_width
 
-    right_eye_length = 1.6 * (face_landmarks[45, 0] - face_landmarks[42, 0])
-    right_eye_width = 3.5 * (face_landmarks[47, 1] - face_landmarks[43, 1])
+    right_eye_length = 2 * (face_landmarks[45, 0] - face_landmarks[42, 0])
+    right_eye_width = 4 * (face_landmarks[47, 1] - face_landmarks[43, 1])
     right_eye_startx = face_landmarks[42, 0] - 0.3 * right_eye_length
     right_eye_starty = face_landmarks[43, 1] - 0.3 * right_eye_width
 
@@ -65,10 +69,11 @@ def extract_eye_regions(rgb_frame, face_landmarks):
 
     return left_eye_img, right_eye_img, (int(left_eye_startx), int(left_eye_starty), int(left_eye_length), int(left_eye_width)), (int(right_eye_startx), int(right_eye_starty), int(right_eye_length), int(right_eye_width))
 
-def draw_bbox_with_label(frame, bbox, label):
+def draw_bbox_with_label(frame, bbox, label, confidence=None):
     x, y, w, h = bbox
     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-    text = f"{label}"
+    if confidence != None: text = f"{label}, ({confidence:.2f})" 
+    else: text = f"{label}"
     cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
 
@@ -90,7 +95,7 @@ def load_mobilenetv3():
     num_classes = 2
     in_features = model.classifier[-1].in_features
     model.classifier[-1] = torch.nn.Linear(in_features, num_classes)
-    model.load_state_dict(torch.load("model/mobilenetv3/mobilenetv3_eye_state_detection.pt"))
+    model.load_state_dict(torch.load("model/mobilenetv3_eye_state_detection.pt"))
     return model
 
 def get_fresh_model(model_name):
