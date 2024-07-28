@@ -9,7 +9,11 @@ A MobileNetV2 model is adapted to the classification task of eye state classific
 1. AMD Ryzen AI Chip/Hardware
 2. Follow setup for IPU [here](https://ryzenai.docs.amd.com/en/latest/inst.html)
 
-## Steps to Run Inference
+## Dataset
+
+The [OACE dataset](https://www.kaggle.com/datasets/muhammadhananasghar/oace-open-and-close-eyes-dataset) is used. This dataset has extra images of a **single** subject added to it (which uses a uuid naming, different from the other images) which contain distortions. Those images are removed from the dataset which brought it down half the size. Next, 40,000 random images (10k from open and 10k from close) were selected and used for the project. You can download the modified and trimmed dataset [here](https://drive.usercontent.google.com/download?id=1Qzuf3M7GOi5_JCmvHopTIe_G4IO7-hjP&export=download&authuser=0)
+
+## Steps to Test The Project
 
 1. Clone the repository
 
@@ -49,3 +53,5 @@ For a complete run involving initializing the model, train, test, quantize and d
 |------------------|------------------|------------------|
 | MobileNetV2    | 96.50%    | 86.50%    |
 | MobileNetV3   | 98%   | 55%    |
+
+*Note: The reason for steep drop in accuracy for MobileNetV3, post quantization is because the opset number does not support HardSigmoid that the model uses. A potential fix would be to use custom ops that is ONNX friendly*
