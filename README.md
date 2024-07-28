@@ -51,7 +51,7 @@ For a complete run involving initializing the model, train, test, quantize and d
 
 | Model       | PyTorch Acuracy        | QDQ Onnx Accuracy        |
 |------------------|------------------|------------------|
-| MobileNetV2    | 96.50%    | 86.50%    |
+| MobileNetV2    | 96%    | 98%    |
 | MobileNetV3   | 98%   | 55%    |
 
 *Note: The reason for steep drop in accuracy for MobileNetV3, post quantization is because the opset number does not support HardSigmoid that the model uses. A potential fix would be to use custom ops that is ONNX friendly*

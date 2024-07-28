@@ -252,32 +252,32 @@
      }
     ],
     "xcompilerAttrs": {
+     "profile": {
+      "intValue": 0
+     },
+     "concat_skip_code_gen": {
+      "boolValue": false
+     },
+     "disable_std_quant": {
+      "boolValue": false
+     },
+     "opt_level": {
+      "intValue": 0
+     },
+     "dpu_subgraph_num": {
+      "intValue": 32
+     },
      "dump_subgraph_ops": {
+      "boolValue": false
+     },
+     "prefetch": {
       "boolValue": false
      },
      "debug_mode": {
       "stringValue": "performance"
      },
-     "concat_skip_code_gen": {
-      "boolValue": false
-     },
-     "dpu_subgraph_num": {
-      "intValue": 32
-     },
-     "prefetch": {
-      "boolValue": false
-     },
-     "profile": {
-      "intValue": 0
-     },
-     "disable_std_quant": {
-      "boolValue": false
-     },
      "preassign": {
       "boolValue": false
-     },
-     "opt_level": {
-      "intValue": 0
      }
     },
     "minimumNumOfConv": 2
@@ -332,8 +332,8 @@
  },
  "onnxPath": "N/A",
  "sessionOptions": {
-  "config_file": "vaip_config.json",
   "cacheDir": "C:\\Users\\srisk\\Eye-State-Detection-with-RyzenAI",
+  "config_file": "vaip_config.json",
   "cacheKey": "modelcachekey"
  }
 }
