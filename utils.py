@@ -72,9 +72,9 @@ def extract_eye_regions(rgb_frame, face_landmarks):
 def draw_bbox_with_label(frame, bbox, label, confidence=None):
     x, y, w, h = bbox
     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-    if confidence != None: text = f"{label}, ({confidence:.2f})" 
+    if confidence != None: text = f"{label} ({confidence:.2f})" 
     else: text = f"{label}"
-    cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+    cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
 
 
 ### ***************************************************************************

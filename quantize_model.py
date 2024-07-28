@@ -47,6 +47,7 @@ def quantize(quantize_loader, model_name):
         activation_type=QuantType.QUInt8,
         weight_type=QuantType.QInt8,
         enable_ipu_cnn=True,
+        # execution_providers=['CPUExecutionProvider'],
         extra_options={'ActivationSymmetric': True}
     )
 
@@ -92,7 +93,7 @@ def main():
     quantize(quantize_loader, args.model)
 
     ipu_test_loader = prepare_dataset("data/OACE", ipu_test=True)
-    session = utils.load_quantized_model(f"model/{args.model}_eye_state_detection.qdq.U8S8.onnx")
+    session = utils.load_quantized_model(f"model/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
     test_quantized_model(ipu_test_loader, session)
 
 if __name__ == "__main__":

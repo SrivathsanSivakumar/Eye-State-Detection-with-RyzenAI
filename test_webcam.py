@@ -26,14 +26,14 @@ while True:
             face_landmarks = np.array(face_landmarks)
 
             # Calculate dimensions and position for the left eye
-            left_eye_length = 1.6 * (face_landmarks[39, 0] - face_landmarks[36, 0])
-            left_eye_width = 3.5 * (face_landmarks[41, 1] - face_landmarks[37, 1])
+            left_eye_length = 2 * (face_landmarks[39, 0] - face_landmarks[36, 0])
+            left_eye_width = 4 * (face_landmarks[41, 1] - face_landmarks[37, 1])
             left_eye_startx = face_landmarks[36, 0] - 0.3 * left_eye_length
             left_eye_starty = face_landmarks[37, 1] - 0.3 * left_eye_width
 
             # Calculate dimensions and position for the right eye
-            right_eye_length = 1.6 * (face_landmarks[45, 0] - face_landmarks[42, 0])
-            right_eye_width = 3.5 * (face_landmarks[47, 1] - face_landmarks[43, 1])
+            right_eye_length = 2 * (face_landmarks[45, 0] - face_landmarks[42, 0])
+            right_eye_width = 4 * (face_landmarks[47, 1] - face_landmarks[43, 1])
             right_eye_startx = face_landmarks[42, 0] - 0.3 * right_eye_length
             right_eye_starty = face_landmarks[43, 1] - 0.3 * right_eye_width
                    
