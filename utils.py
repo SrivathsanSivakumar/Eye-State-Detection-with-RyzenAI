@@ -18,7 +18,8 @@ def load_quantized_model(model_path, model_name):
 
     onnx_model_path = model_path
     model = onnx.load(onnx_model_path)  
-    cache_key = 'modelcachekey'
+    cache_key = 'modelcachekey' # default cache key - used for mobilennetv2
+    
     '''
     TODO: Add argument to run inference on cpu and ipu
     '''
@@ -123,7 +124,7 @@ def get_fresh_model(model_name):
         # modify final layer to match the number of classes
         in_features = model.classifier[3].in_features
         model.classifier[3] = nn.Linear(in_features, 2) # open eyes and close eyes - 2 classes
-
+        
         # freeze base layers of model
         for name, param in model.named_parameters():
             if "classifier" in name:

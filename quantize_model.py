@@ -30,6 +30,7 @@ def mobilenet_calibartion_reader(data_loader):
 
 def quantize(quantize_loader, model_name):
     ### check model dimensions, features and input reqs
+    print(f"Quantizing {model_name}...")
     onnx_model_path = f"model/{model_name}_eye_state_detection.onnx"
     onnx_model = onnx.load(onnx_model_path)
     onnx.checker.check_model(onnx_model)

@@ -175,7 +175,6 @@ def test_pt_model(model, test_loader, criterion, classes, num_imgs):
     print("To view predictions of entire test set, please change num_imgs parameter in main()")
 
 def export_to_onnx(model, models_dir):
-    # prep for onnx export
     random_inputs = torch.randn(1, 3, 224, 224) # batch size, channels, height, width
 
     input_names = ['input']
@@ -215,6 +214,7 @@ def main():
                     tar.extractall(path="data")
                     
     criterion = nn.CrossEntropyLoss() # to learn both classes and not just one. 
+
     if args.train:
         classes, train_loader, val_loader, test_loader = prepare_dataset(dataset_path)
         train_model(args.model, args.num_epochs, train_loader, val_loader, criterion)
