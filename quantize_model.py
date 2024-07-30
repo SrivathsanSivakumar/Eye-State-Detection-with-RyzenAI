@@ -90,8 +90,8 @@ def test_quantized_model(dataloader, session):
 
 def main():
     args = get_args()
-    # quantize_loader = prepare_dataset("data/OACE", quantization=True)
-    # quantize(quantize_loader, args.model)
+    quantize_loader = prepare_dataset("data/OACE", quantization=True)
+    quantize(quantize_loader, args.model)
 
     ipu_test_loader = prepare_dataset("data/OACE", ipu_test=True)
     session = utils.load_quantized_model(f"model/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
