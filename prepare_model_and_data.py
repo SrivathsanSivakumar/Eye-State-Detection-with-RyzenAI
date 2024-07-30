@@ -29,9 +29,9 @@ def prepare_dataset(dataset_path, quantization: bool=False, ipu_test: bool=False
 
     # preprocessing
     train_transform = transforms.Compose([
-    transforms.RandomRotation(10),
-    transforms.ColorJitter(0.2, 0.2, 0.2, 0.1),
-    transforms.GaussianBlur(1),
+    transforms.RandomRotation(10),              # rotate images
+    transforms.ColorJitter(0.2, 0.2, 0.2, 0.1), # change lighting
+    transforms.GaussianBlur(1),                 # blur images
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])

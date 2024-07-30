@@ -1,6 +1,6 @@
 # Eye State Classification using RyzenAI with MobileNetV2, MobileNetV3 and ResNet50
 
-![cover image](cover_image.png)
+![cover image](misc/cover_image.png)
 
 Results from MobileNetV2 post quantized model, run on RyzenAI.
 
