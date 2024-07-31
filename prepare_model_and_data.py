@@ -29,11 +29,12 @@ def prepare_dataset(dataset_path, quantization: bool=False, ipu_test: bool=False
 
     # preprocessing
     train_transform = transforms.Compose([
-    transforms.RandomRotation(10),
-    transforms.ColorJitter(0.2, 0.2, 0.2, 0.1),
-    transforms.GaussianBlur(1),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Resize((224, 224)),
+        transforms.RandomRotation(10),
+        transforms.ColorJitter(0.2, 0.2, 0.2, 0.1),
+        transforms.GaussianBlur(1),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
     basic_transform = transforms.Compose([
