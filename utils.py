@@ -88,15 +88,25 @@ def load_mobilenetv2():
     num_classes = 2  # Assuming 2 classes for the eye state detection
     in_features = model.classifier[-1].in_features
     model.classifier[-1] = torch.nn.Linear(in_features, num_classes)
-    model.load_state_dict(torch.load("model/mobilenetv2_eye_state_detection.pt"))
+    model.load_state_dict(torch.load("models/mobilenetv2_eye_state_detection.pt"))
+    for name, param in model.named_parameters():
+        if "classifier" in name:
+            param.requires_grad=True
+        else:
+            param.requires_grad=False
     return model
 
 def load_mobilenetv3():
-    model = models.mobilenet_v3_large()
+    model = models.mobilenet_v3_large(pretrained=False)
     num_classes = 2
     in_features = model.classifier[-1].in_features
     model.classifier[-1] = torch.nn.Linear(in_features, num_classes)
-    model.load_state_dict(torch.load("model/mobilenetv3_eye_state_detection.pt"))
+    model.load_state_dict(torch.load("models/mobilenetv3_eye_state_detection.pt"))
+    for name, param in model.named_parameters():
+        if "classifier" in name:
+            param.requires_grad=True
+        else:
+            param.requires_grad=False
     return model
 
 def get_fresh_model(model_name):
@@ -133,5 +143,5 @@ def get_fresh_model(model_name):
                 param.requires_grad=False
 
         return model
-
-    else: pass # TODO: add support for resnet50
+    
+    else: pass

@@ -82,14 +82,14 @@ def image_inference(image_paths, session):
 
 def main():
     args = get_args()
-    session = utils.load_quantized_model(f"model/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
+    session = utils.load_quantized_model(f"models/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
 
     if args.image:
         image_inference([args.image], session)
     else:
         image_folder = "images"
         image_paths = list(Path(image_folder).glob('*.png'))
-        image_inference(image_folder, session)
+        image_inference(image_paths, session)
 
 if __name__ == "__main__":
     main()

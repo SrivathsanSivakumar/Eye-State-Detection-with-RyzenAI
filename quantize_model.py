@@ -31,12 +31,12 @@ def mobilenet_calibartion_reader(data_loader):
 def quantize(quantize_loader, model_name):
     ### check model dimensions, features and input reqs
     print(f"Quantizing {model_name}...")
-    onnx_model_path = f"model/{model_name}_eye_state_detection.onnx"
+    onnx_model_path = f"models/{model_name}_eye_state_detection.onnx"
     onnx_model = onnx.load(onnx_model_path)
     onnx.checker.check_model(onnx_model)
 
     input_model_path = onnx_model_path
-    output_model_path = f"model/{model_name}_eye_state_detection.qdq.U8S8.onnx"
+    output_model_path = f"models/{model_name}_eye_state_detection.qdq.U8S8.onnx"
     data_reader = mobilenet_calibartion_reader(quantize_loader)
 
     vai_q_onnx.quantize_static(
@@ -49,7 +49,7 @@ def quantize(quantize_loader, model_name):
         weight_type=QuantType.QInt8,
         enable_ipu_cnn=True,
         # execution_providers=['CPUExecutionProvider'],
-        extra_options={'ActivationSymmetric': True}
+        # extra_options={'ActivationSymmetric': True}
     )
 
     print(f"Quantized Model Saved at {output_model_path}")
@@ -94,7 +94,7 @@ def main():
     quantize(quantize_loader, args.model)
 
     ipu_test_loader = prepare_dataset("data/OACE", ipu_test=True)
-    session = utils.load_quantized_model(f"model/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
+    session = utils.load_quantized_model(f"models/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
     test_quantized_model(ipu_test_loader, session)
 
 if __name__ == "__main__":
