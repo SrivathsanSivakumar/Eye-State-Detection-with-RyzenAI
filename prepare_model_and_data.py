@@ -137,7 +137,8 @@ def train_model(model_name, num_epochs, train_loader, val_loader, criterion):
 
     print('Training complete\n')
     model.to("cpu")
-    torch.save(model.state_dict(), f"model/{model_name}_eye_state_detection.pt")
+    torch.save(model.state_dict(), f"models/{model_name}_eye_state_detection.pt")
+    return model
 
 def test_pt_model(model, test_loader, criterion, classes, num_imgs):
     print("****************************")
@@ -218,21 +219,21 @@ def main():
 
     if args.train:
         classes, train_loader, val_loader, test_loader = prepare_dataset(dataset_path)
-        train_model(args.model, args.num_epochs, train_loader, val_loader, criterion)
+        model = train_model(args.model, args.num_epochs, train_loader, val_loader, criterion)
     else:
-        classes, test_loader = prepare_dataset(dataset_path)
+        classes, test_loader = prepare_dataset()
 
-    # load finetuned model
-    if args.model == 'mobilenetv3':
-        model = utils.load_mobilenetv3()  
-    else:
-        model = utils.load_mobilenetv2()
+        # load finetuned model
+        if args.model == 'mobilenetv3':
+            model = utils.load_mobilenetv3()  
+        else:
+            model = utils.load_mobilenetv2()
 
-    model = model.to("cpu")
+        model = model.to("cpu")
 
     # test model and export to onnx
     test_pt_model(model, test_loader, criterion, classes, 10)
-    export_to_onnx(model, f"model/{args.model}")
+    export_to_onnx(model, f"models/{args.model}")
 
 if __name__ == "__main__":
     main()
