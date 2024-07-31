@@ -1,0 +1,14 @@
+dlib==19.24.4
+facenet_pytorch==2.6.0
+gdown==5.2.0
+numpy==1.26.3
+onnx==1.16.1
+onnxruntime==1.15.1
+onnxruntime_vitisai==1.15.1
+opencv_python==4.10.0.84
+Pillow==10.2.0
+torch==2.2.2
+torch==2.3.1
+torchvision==0.17.2
+torchvision==0.18.1
+vai_q_onnx==1.16.0+69bc4f2
