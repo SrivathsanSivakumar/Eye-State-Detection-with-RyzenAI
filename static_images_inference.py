@@ -24,12 +24,12 @@ classes = ["Closed", "Open"]
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-model", type=str, default='mobilenetv2')
+    parser.add_argument("--image", type=str)
     args = parser.parse_args()
     return args
 
-def image_inference(image_folder, session):
+def image_inference(image_paths, session):
 
-    image_paths = list(Path(image_folder).glob('*.png'))
     detector = MTCNN(select_largest=False, post_process=False)
     sp = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
     faces = dlib.full_object_detections()
@@ -83,8 +83,13 @@ def image_inference(image_folder, session):
 def main():
     args = get_args()
     session = utils.load_quantized_model(f"model/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
-    image_folder = "images"
-    image_inference(image_folder, session)
+
+    if args.image:
+        image_inference([args.image], session)
+    else:
+        image_folder = "images"
+        image_paths = list(Path(image_folder).glob('*.png'))
+        image_inference(image_folder, session)
 
 if __name__ == "__main__":
     main()
