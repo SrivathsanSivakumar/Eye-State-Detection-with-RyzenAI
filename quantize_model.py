@@ -10,6 +10,7 @@ from onnxruntime.quantization import QuantFormat, QuantType, CalibrationDataRead
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-model", type=str, default='mobilenetv2')
+    parser.add_argument("--test_only", action='store_true')
     args = parser.parse_args()
     return args
 
@@ -49,7 +50,7 @@ def quantize(quantize_loader, model_name):
         weight_type=QuantType.QInt8,
         enable_ipu_cnn=True,
         # execution_providers=['CPUExecutionProvider'],
-        # extra_options={'ActivationSymmetric': True}
+        extra_options={'ActivationSymmetric': True}
     )
 
     print(f"Quantized Model Saved at {output_model_path}")
@@ -90,8 +91,10 @@ def test_quantized_model(dataloader, session):
 
 def main():
     args = get_args()
-    quantize_loader = prepare_dataset("data/OACE", quantization=True)
-    quantize(quantize_loader, args.model)
+    
+    if not args.test_only:
+        quantize_loader = prepare_dataset("data/OACE", quantization=True)
+        quantize(quantize_loader, args.model)
 
     ipu_test_loader = prepare_dataset("data/OACE", ipu_test=True)
     session = utils.load_quantized_model(f"models/{args.model}_eye_state_detection.qdq.U8S8.onnx", args.model)
