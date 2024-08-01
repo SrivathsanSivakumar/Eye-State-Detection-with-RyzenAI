@@ -8,7 +8,5 @@ onnxruntime_vitisai==1.15.1
 opencv_python==4.10.0.84
 Pillow==10.2.0
 torch==2.2.2
-torch==2.3.1
 torchvision==0.17.2
-torchvision==0.18.1
 vai_q_onnx==1.16.0+69bc4f2
