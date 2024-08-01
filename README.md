@@ -6,12 +6,12 @@ Results from MobileNetV2 post quantized model, run on RyzenAI.
 
 ## Introduction
 
-A MobileNetV2 model is adapted to the classification task of eye state classification i.e. open or closed eyes. Each eye is individually recognized and labelled. The model is converted and quantized to be compatible with AMD's Ryzen AI chip. 
+MobileNetV2 and MobileNetV3 models are adapted to the classification task of eye state classification i.e. open or closed eyes. Each eye is individually recognized and labelled. The model is converted and quantized to be compatible with AMD's Ryzen AI chip. Please note that this project currently only supports **ryzen-ai-1.1**
 
 ## Hardware Requirements
 
 1. AMD Ryzen AI Chip/Hardware
-2. Follow setup for IPU [here](https://ryzenai.docs.amd.com/en/latest/inst.html)
+2. Follow setup for IPU [here](https://ryzenai.docs.amd.com/en/latest/inst.html) 
 
 ## Dataset
 
