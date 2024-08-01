@@ -1,4 +1,4 @@
-# Eye State Classification using RyzenAI with MobileNetV2, MobileNetV3 and ResNet50
+# Eye State Classification using RyzenAI with MobileNetV2 and MobileNetV3
 
 ![cover image](cover_image.png)
 
@@ -50,6 +50,7 @@ For a complete run involving initializing the model, train, test, quantize and d
 | 1. Initialize Model <br> 2. Prepare Dataset <br> 3. Train, Test, and Convert Model to ONNX format | prepare_model_and_data.py, utils.py | `prepare_model_and_data.py` allows you to either load a finetuned PyTorch model or initialize a fresh model and train it. After one of two scenarios the model is tested then converted to ONNX format. **Use the command `python prepare_model_and_data.py` to run the script with default settings**. Options: <br> <br> 1. `-model` Specify which model you want between "*mobilenetv2*" and "*mobilenetv3*". **MobileNetV2 is selected by default** <br> 2. `-train` Use this flag if you want to train a freshly loaded model <br> 3. `--num_epochs` specify the number of epochs you want to train the model for <br> <br> `utils.py` contains helper functions to facilitate efficient working of the script.|
 | Static Quantize Model and Test | quantize_model.py| `quantize_model.py` is a script that uses Vitis AI to static quantize the model to __QDQ__ format with __QUInt8 Activation__ then the quantized model is tested to get accuracy. **Use command `python quantize_model.py` to run the script with default options**. Options: <br> <br> 1. `-model` Specify which model you chose in the previous script between "*mobilenetv2*" and "*mobilenetv3*". **mobilenetv2 is selected by default** |
 | Inference with Webcam or Images | webcam_inferece.py, static_images_inference.py | `webcam_inference.py` allows you to use the model to classify for closed or open eyes, in real-time using your webcam. **Use the command `python webcam_inference.py` to run the script with default options**. Options: <br> <br> 1. `-model` Specify which model you chose in the previous script between "*mobilenetv2*" and "*mobilenetv3*". **mobilenetv2 is selected by default** <br> <br> `static_images_inference.py` allows you to use the model to classify for closed or open eyes given some images. **Use the command `python static_images_inference.py` to run the script with default options**. Options: <br> <br> 1. `-model` Specify which model you chose in the previous script between "*mobilenetv2*" and "*mobilenetv3*". **mobilenetv2 is selected by default**<br><br>2. `--image` feed a custom image to the model|
+|Pull dataset from Google Drive|get_dataset.py|`get_dataset.py` pulls the trimmmed dataset from Google Drive and extracts it to the `data` folder. **Use the command `python get_dataset.py` to run the script** |
 
 ## Model Performance Comparison
 
