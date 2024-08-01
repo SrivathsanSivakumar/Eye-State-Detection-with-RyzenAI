@@ -206,7 +206,7 @@ def main():
         classes, train_loader, val_loader, test_loader = prepare_dataset(dataset_path)
         model = train_model(args.model, args.num_epochs, train_loader, val_loader, criterion)
     else:
-        classes, test_loader = prepare_dataset()
+        classes, test_loader = prepare_dataset(dataset_path)
 
         # load finetuned model
         if args.model == 'mobilenetv3':
